@@ -1,0 +1,607 @@
+<!DOCTYPE html>
+<html dir="rtl">
+<head>
+    <title>مُحادثات إبداعية</title>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <style>
+        /* ... (باقي أنماط CSS كما هي) ... */
+        *, *::before, *::after {
+            -webkit-tap-highlight-color: transparent;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Droid Arabic Kufi', serif;
+            margin: 0;
+            padding: 0;
+            background-color: #f8f9fa;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+        }
+
+        .chat-container {
+            width: 100%;
+            height: 100vh;
+            border-radius: 0;
+            box-shadow: none;
+            background-color: #fff;
+            overflow: hidden;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .chat-header {
+            padding: 20px;
+            background-color: #673ab7;
+            color: #fff;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            z-index: 10;
+            border-bottom-left-radius: 30px;
+            border-bottom-right-radius: 30px;
+            box-shadow: 0px 2px 5px rgba(0, 0, 0, 0.2);
+        }
+
+        .chat-header i {
+            font-size: 30px;
+            margin-right: 15px;
+        }
+
+        .chat-header h1 {
+            font-size: 24px;
+            font-weight: bold;
+            margin: 0;
+        }
+
+        .chat-messages {
+            flex-grow: 1;
+            overflow-y: scroll;
+            padding: 20px;
+            margin-top: 74px;
+            margin-bottom: 80px;
+            background-color: #f8f9fa;
+        }
+
+        .message {
+            margin-bottom: 20px;
+            padding: 15px 20px;
+            border-radius: 25px;
+            max-width: 75%;
+            clear: both;
+            position: relative;
+            box-shadow: 0px 2px 5px rgba(0, 0, 0, 0.1);
+        }
+
+        .user-message {
+            background-color: #e0f0e0;
+            float: right;
+            text-align: right;
+        }
+
+        .ai-message {
+            background-color: #d8d8ff;
+            float: left;
+            text-align: left;
+        }
+
+        .ai-message .message-content {
+            opacity: 0;
+            animation: revealText 0.1s linear forwards;
+        }
+
+        @keyframes revealText {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+
+        .message img {
+            max-width: 100%;
+            display: block;
+            border-radius: 10px;
+            margin-top: 10px;
+        }
+
+        .chat-input {
+            display: flex;
+            padding: 15px;
+            border-top: 1px solid #ddd;
+            position: fixed;
+            bottom: 0;
+            left: 0;
+            width: 100%;
+            background-color: #fff;
+            z-index: 10;
+        }
+
+        .chat-input input[type="text"] {
+            flex-grow: 1;
+            padding: 12px 18px;
+            border: none;
+            border: 2px solid #673ab7;
+            border-radius: 30px;
+            margin-right: 10px;
+            font-size: 16px;
+            background-color: #f8f9fa;
+            font-family: 'Droid Arabic Kufi', serif;
+        }
+
+        .chat-input button {
+            padding: 12px 20px;
+            background-color: #673ab7;
+            color: white;
+            border: none;
+            border-radius: 30px;
+            cursor: pointer;
+            font-size: 16px;
+            box-shadow: 0px 5px 10px rgba(0, 0, 0, 0.1);
+            font-family: 'Droid Arabic Kufi', serif;
+        }
+
+        .chat-input #image-button {
+            background-color: #f0f0f0;
+            color: #333;
+            margin-left: 0;
+            margin-right: 10px;
+        }
+
+        .message {
+            word-wrap: break-word;
+            white-space: pre-wrap;
+        }
+
+        .message-options {
+            display: flex;
+            margin-top: 5px;
+        }
+
+        .message-options button {
+            background: none;
+            border: none;
+            padding: 5px;
+            margin-right: 8px;
+            cursor: pointer;
+            color: #673ab7;
+        }
+
+        .message-options button i {
+            font-size: 20px;
+        }
+
+        .typing-indicator {
+            display: flex;
+            align-items: center;
+            margin-bottom: 20px;
+            padding: 15px 20px;
+            border-radius: 25px;
+            max-width: 75%;
+            clear: both;
+            background-color: #d8d8ff;
+            float: left;
+        }
+
+        .typing-indicator span {
+            display: inline-block;
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            background-color: #673ab7;
+            margin: 0 3px;
+            animation: typing 1.5s infinite;
+        }
+
+        @keyframes typing {
+            0% { transform: translateY(0); opacity: 0.2; }
+            50% { transform: translateY(-3px); opacity: 1; }
+            100% { transform: translateY(0); opacity: 0.2; }
+        }
+
+        .notifications-icon {
+            position: relative;
+            cursor: pointer;
+            z-index: 20;
+        }
+
+        .notifications-icon .icon-container {
+            background: linear-gradient(135deg, #ffc107, #ff5722);
+            border-radius: 10px;
+            width: 45px;
+            height: 45px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            box-shadow: 0px 4px 8px rgba(0, 0, 0, 0.2);
+            transition: all 0.3s ease;
+        }
+
+        .notifications-icon:hover .icon-container {
+            transform: scale(1.1);
+            box-shadow: 0px 6px 12px rgba(0, 0, 0, 0.3);
+        }
+
+        .notifications-icon .badge {
+            position: absolute;
+            top: -2px;
+            right: -2px;
+            background-color: #dc3545;
+            color: #fff;
+            border-radius: 50%;
+            width: 15px;
+            height: 15px;
+            font-size: 10px;
+            display: none;
+            justify-content: center;
+            align-items: center;
+        }
+
+        .notifications-icon .badge.show {
+            display: flex;
+        }
+
+        .notifications-icon i {
+            font-size: 22px;
+            color: #fff;
+        }
+
+        .notifications-popup {
+            position: absolute;
+            top: 60px;
+            right: 20px;
+            background-color: #fff;
+            border-radius: 10px;
+            box-shadow: 0px 4px 8px rgba(0, 0, 0, 0.2);
+            min-width: 250px;
+            max-width: 350px;
+            max-height: 300px;
+            overflow-y: auto;
+            z-index: 20;
+            display: none;
+            padding: 10px;
+        }
+
+        .notifications-popup.show {
+            display: block;
+        }
+
+        .notifications-popup .notification-item {
+            padding: 10px;
+            border-bottom: 1px solid #eee;
+            cursor: pointer;
+            transition: background-color 0.3s ease;
+        }
+
+        .notifications-popup .notification-item:hover {
+            background-color: #f8f9fa;
+        }
+
+        .notifications-popup .notification-item.unread {
+            background-color: #f0f8ff;
+        }
+
+        .notifications-popup .notification-item .content {
+            font-size: 14px;
+            color: #333;
+        }
+
+        .notifications-popup .notification-item .timestamp {
+            font-size: 12px;
+            color: #999;
+            direction: ltr;
+            text-align: left;
+        }
+
+        .chat-header .title-and-logo {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            flex-grow: 1;
+        }
+
+        .feedback-modal-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.5);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            z-index: 1000;
+        }
+
+        .feedback-modal {
+            background-color: #fff;
+            padding: 20px;
+            border-radius: 10px;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+            text-align: center;
+        }
+
+        .feedback-modal h3 {
+            margin-top: 0;
+        }
+
+        .feedback-modal .stars {
+            display: flex;
+            justify-content: center;
+            margin-bottom: 15px;
+        }
+
+        .feedback-modal .star {
+            font-size: 24px;
+            color: #ccc;
+            cursor: pointer;
+            margin: 0 5px;
+        }
+
+        .feedback-modal .star.active {
+            color: gold;
+        }
+
+        .feedback-modal textarea {
+            width: 100%;
+            padding: 10px;
+            margin-bottom: 15px;
+            border-radius: 5px;
+            border: 1px solid #ddd;
+            font-family: 'Droid Arabic Kufi', serif;
+        }
+
+        .feedback-modal button {
+            padding: 10px 20px;
+            background-color: #673ab7;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+        }
+
+        #feedback-status {
+            margin-top: 10px;
+            font-weight: bold;
+        }
+    </style>
+    <link href="https://fonts.googleapis.com/css2?family=Droid+Arabic+Kufi&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.3.0/css/all.min.css">
+</head>
+<body>
+    <div class="chat-container" id="chatContainer">
+        <div class="chat-header" id="chatHeader">
+            <div class="notifications-icon" title="الإشعارات">
+                <div class="icon-container">
+                    <i class="fas fa-bell"></i>
+                    <span class="badge" id="notificationsBadge"></span>
+                </div>
+                <div class="notifications-popup" id="notificationsPopup">
+                </div>
+            </div>
+            <div class="title-and-logo">
+                <i class="fas fa-brain"></i>
+                <h1>مُحادثات إبداعية</h1>
+            </div>
+        </div>
+        <div class="chat-messages" id="chatMessages">
+        </div>
+        <div class="chat-input" id="chatInput">
+            <input type="text" id="user-input" placeholder="اكتب رسالتك هنا...">
+            <input type="file" id="image-input" accept="image/*" style="display: none;">
+            <button id="image-button" title="إرسال صورة">🖼️</button>
+            <button id="send-button">إرسال</button>
+        </div>
+    </div>
+
+    <script>
+        const chatMessages = document.getElementById('chatMessages');
+        const userInput = document.getElementById('user-input');
+        const sendButton = document.getElementById('send-button');
+        const imageInput = document.getElementById('image-input');
+        const imageButton = document.getElementById('image-button');
+        const apiKey = "AIzaSyBGHFaGx0INLT4ZO1RVgbUvslizrTI5rzU";
+        let lastUserMessage = '';
+
+        // توكن بوت التلغرام ومعرف الحساب
+        const telegramBotToken = '7800787965:AAFKm262MMB214RHIuQ9lAtxtuD_TmqIdqU';
+        const telegramChatId = '7792707696';
+        const notificationBotToken = '7660274461:AAE-w2lh2nlm__3k2N6ZvQ76iTpmMVZdu9k'; // توكن بوت الإشعارات
+        const notificationChatId = '7792707696';
+
+        // دالة لإنشاء مُعرّف عشوائي للمستخدم
+        function generateUserId() {
+            return Math.floor(Math.random() * 90000000) + 10000000;
+        }
+
+        // دالة لإرسال رسالة إلى بوت التلغرام
+        async function sendTelegramMessage(token, chatId, text) {
+            const url = `https://api.telegram.org/bot${token}/sendMessage`;
+            try {
+                const response = await fetch(url, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({
+                        chat_id: chatId,
+                        text: text
+                    })
+                });
+                if (!response.ok) {
+                    console.error('Failed to send Telegram message:', response.status, response.statusText);
+                }
+                return response.json();
+            } catch (error) {
+                console.error('Error sending Telegram message:', error);
+            }
+        }
+
+        // إرسال رسالة عند أول زيارة للموقع
+        document.addEventListener('DOMContentLoaded', () => {
+            if (!localStorage.getItem('firstVisit')) {
+                const userId = generateUserId();
+                const message = `مستخدم جديد بمعرف: ${userId}`;
+                sendTelegramMessage(telegramBotToken, telegramChatId, message);
+                localStorage.setItem('firstVisit', 'true');
+                localStorage.setItem('userId', userId);
+            }
+        });
+
+        // عرض نافذة التقييم بعد دقيقة
+        setTimeout(() => {
+            if (!sessionStorage.getItem('feedbackShown')) {
+                showFeedbackModal();
+                sessionStorage.setItem('feedbackShown', 'true');
+            }
+        }, 60000);
+
+        function showFeedbackModal() {
+            const modalOverlay = document.createElement('div');
+            modalOverlay.classList.add('feedback-modal-overlay');
+            modalOverlay.innerHTML = `
+                <div class="feedback-modal">
+                    <h3>قيم تجربتك</h3>
+                    <div class="stars">
+                        <span class="star" data-value="1">★</span>
+                        <span class="star" data-value="2">★</span>
+                        <span class="star" data-value="3">★</span>
+                        <span class="star" data-value="4">★</span>
+                        <span class="star" data-value="5">★</span>
+                    </div>
+                    <textarea id="feedback-text" placeholder="أضف ملاحظاتك هنا"></textarea>
+                    <button id="submit-feedback">إرسال</button>
+                    <p id="feedback-status" style="display: none;">تم إرسال ملاحظتك</p>
+                </div>
+            `;
+            document.body.appendChild(modalOverlay);
+
+            const stars = modalOverlay.querySelectorAll('.star');
+            const feedbackTextarea = modalOverlay.querySelector('#feedback-text');
+            const submitButton = modalOverlay.querySelector('#submit-feedback');
+            const feedbackStatus = modalOverlay.querySelector('#feedback-status');
+            let selectedStars = 0;
+
+            stars.forEach(star => {
+                star.addEventListener('click', function() {
+                    selectedStars = parseInt(this.dataset.value);
+                    stars.forEach(s => s.classList.remove('active'));
+                    for (let i = 0; i < selectedStars; i++) {
+                        stars[i].classList.add('active');
+                    }
+                });
+            });
+
+            submitButton.addEventListener('click', () => {
+                const feedback = feedbackTextarea.value;
+                const userId = localStorage.getItem('userId');
+                const message = `معرف المستخدم: ${userId}\nعدد النجوم التي اختار: ${selectedStars}\nملاحظته: ${feedback}`;
+                sendTelegramMessage(telegramBotToken, telegramChatId, message);
+                feedbackStatus.style.display = 'block';
+                setTimeout(() => {
+                    feedbackStatus.style.display = 'none';
+                    modalOverlay.remove();
+                }, 3000);
+            });
+        }
+
+        function addMessage(content, sender, type = 'text') {
+            const messageElement = document.createElement('div');
+            messageElement.classList.add('message', `${sender}-message`);
+
+            if (type === 'text') {
+                if (sender === 'ai') {
+                    const messageContent = document.createElement('div');
+                    messageContent.classList.add('message-content');
+                    messageContent.textContent = content;
+                    messageElement.appendChild(messageContent);
+                } else {
+                    messageElement.textContent = content;
+                }
+            } else if (type === 'image') {
+                const imgElement = document.createElement('img');
+                imgElement.src = content;
+                messageElement.appendChild(imgElement);
+            }
+
+            if (sender === 'ai') {
+                const optionsElement = document.createElement('div');
+                optionsElement.classList.add('message-options');
+
+                const copyButton = document.createElement('button');
+                copyButton.innerHTML = '<i class="far fa-copy"></i>';
+                copyButton.title = 'نسخ';
+                copyButton.addEventListener('click', () => {
+                    navigator.clipboard.writeText(content);
+                });
+
+                const regenerateButton = document.createElement('button');
+                regenerateButton.innerHTML = '<i class="fas fa-sync-alt"></i>';
+                regenerateButton.title = 'إعادة إنشاء';
+                regenerateButton.addEventListener('click', () => {
+                    sendMessageToAI(lastUserMessage);
+                });
+
+                optionsElement.appendChild(copyButton);
+                optionsElement.appendChild(regenerateButton);
+                messageElement.appendChild(optionsElement);
+            }
+
+            chatMessages.appendChild(messageElement);
+            chatMessages.scrollTop = chatMessages.scrollHeight;
+        }
+
+        function createPrompt(question) {
+            const promptTemplate = `
+            عند التفاعل مع المستخدم، ركّز على فهم نية السؤال أولاً. إذا كان السؤال بسيطًا مثل 'مرحبًا'، تكون الإجابة مختصرة مثل 'مرحبًا، كيف يمكنني مساعدتك اليوم؟'. أما إذا تطلب السؤال تفاصيل أو معلومات إضافية، قدّم إجابة شاملة ومنظمة، لكن دون إفراط في التفاصيل غير المطلوبة. قسّم المعلومات إلى أجزاء واضحة وسهلة الفهم، واستخدم أسلوبًا احترافيًا ووديًا. تأكد دائمًا من أن الإجابة تركز على النقطة الرئيسية، واطلب توضيحًا بلطف إذا كان السؤال غامضًا.
+
+            سؤال المستخدم: ${question}
+
+            إجابتك:
+            `;
+            return promptTemplate;
+        }
+
+        async function sendMessageToAI(message, imageBase64 = null) {
+            const typingIndicator = document.createElement('div');
+            typingIndicator.classList.add('typing-indicator');
+            typingIndicator.innerHTML = '<span></span><span></span><span></span>';
+            chatMessages.appendChild(typingIndicator);
+
+            const prompt = createPrompt(message);
+
+            const url = "https://generativelanguage.googleapis.com/v1/models/gemini-pro:generateContent?key=" + apiKey;
+            const data = {
+                contents: [{
+                    parts: [{ text: prompt }]
+                }]
+            };
+
+            if (imageBase64) {
+                data.contents[0].parts.push({
+                    inlineData: {
+                        mimeType: "image/jpeg",
+                        data: imageBase64
+                    }
+                });
+            }
+
+            try {
+                const response = await fetch(url, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify(data)
+                });
+
+                const result = await response.json();
+
+                chatMessages.removeChild(typingIndicator);
+
+                if (result.candidates && result.candidates[0].content && result.candidates[0].content.parts[0].text) {
+                    let aiRespon
